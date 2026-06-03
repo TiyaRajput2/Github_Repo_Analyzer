@@ -138,7 +138,6 @@ async def get_readme(owner: str, repo: str):
 
 @mcp.tool()
 async def get_file_metadata(owner: str, repo: str, path: str):
-
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
 
     async with httpx.AsyncClient() as client:
@@ -146,13 +145,25 @@ async def get_file_metadata(owner: str, repo: str, path: str):
 
     data = res.json()
 
+    if isinstance(data, list):
+        return {
+            "error": f"{path} is a directory, not a file",
+            "files": [
+                {
+                    "name": item.get("name"),
+                    "path": item.get("path"),
+                    "type": item.get("type"),
+                }
+                for item in data
+            ],
+        }
+
     return {
         "name": data.get("name"),
         "path": data.get("path"),
         "size": data.get("size"),
-        "download_url": data.get("download_url")
+        "download_url": data.get("download_url"),
     }
-    
 @mcp.tool()
 async def list_repo_dirs(owner: str, repo: str):
 
