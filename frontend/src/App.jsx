@@ -5,23 +5,53 @@ import { queryRepo } from "./api/queryAPI";
 
 function App() {
   const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const normalizeAnswer = (response) => {
+    if (typeof response === "string") return response;
+
+    if (response && typeof response === "object") {
+      if (typeof response.answer === "string") return response.answer;
+      if (typeof response.response === "string") return response.response;
+    }
+
+    return JSON.stringify(response, null, 2);
+  };
 
   const handleAsk = async ({
     repoUrl,
     question,
   }) => {
-    const response = await queryRepo(
-      repoUrl,
-      question
-    );
+    if (!repoUrl?.trim() || !question?.trim()) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        question,
-        answer: JSON.stringify(response),
-      },
-    ]);
+    setIsLoading(true);
+
+    try {
+      const response = await queryRepo(repoUrl, question);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          question,
+          answer: normalizeAnswer(response),
+        },
+      ]);
+    } catch (error) {
+      const message =
+        error?.response?.data?.detail ||
+        error?.message ||
+        "Unable to analyze this repository right now.";
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          question,
+          answer: `Sorry, the analysis failed. ${message}`,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,17 +64,13 @@ function App() {
               <h1 className="text-4xl font-black tracking-tight text-white md:text-5xl">Understand any repository with a simple conversation.</h1>
               <p className="text-lg text-slate-200/90">Paste a GitHub URL, ask what you need, and get clear answers about structure, files, and code context in seconds.</p>
             </div>
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-slate-950/35 p-4 text-sm text-slate-200 md:min-w-72">
-              <div className="flex items-center justify-between"><span>Fast setup</span><strong className="text-emerald-300">Ready</strong></div>
-              <div className="flex items-center justify-between"><span>AI insights</span><strong className="text-cyan-300">Live</strong></div>
-              <div className="flex items-center justify-between"><span>Frontend</span><strong className="text-violet-300">Vite + React</strong></div>
-            </div>
+
           </div>
         </section>
 
         <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-3xl border border-white/10 bg-white/8 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl md:p-7">
-            <RepoForm onSubmit={handleAsk} />
+            <RepoForm onSubmit={handleAsk} isLoading={isLoading} />
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/8 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl md:p-7">
@@ -55,7 +81,7 @@ function App() {
               </div>
               <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200">Live</span>
             </div>
-            <ChatWindow messages={messages} />
+            <ChatWindow messages={messages} isLoading={isLoading} />
           </div>
         </section>
       </div>

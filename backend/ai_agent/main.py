@@ -6,9 +6,10 @@ from services.repo_utils import parse_repo_url
 from workflows.graph import graph
 
 app = FastAPI()
-app = app.add_middleware(
+
+app.add_middleware(
     CORSMiddleware,
-    allow_origins="http://localhost:5173/",
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
