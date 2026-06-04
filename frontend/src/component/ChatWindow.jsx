@@ -28,10 +28,13 @@ const buildChartData = (answer = "") => {
 };
 
 export default function ChatWindow({ messages, isLoading = false }) {
+  const emptyStateMessage =
+    "No questions yet. Submit a repository URL and ask your first question to see the AI analysis here.";
+
   if (!messages.length && !isLoading) {
     return (
       <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/30 p-5 text-sm text-slate-300">
-        No questions yet. Submit a repository URL and ask your first question to see the AI analysis here.
+        {emptyStateMessage}
       </div>
     );
   }
