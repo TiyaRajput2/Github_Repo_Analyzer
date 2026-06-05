@@ -1,4 +1,3 @@
-from services.embedding_service import embed_text
 from services.vector_store import add_code_chunk
 from services.chunking_service import chunk_code
 
@@ -72,15 +71,15 @@ async def index_repository(owner, repo):
 
         for i, chunk in enumerate(chunks):
 
-            embedding = embed_text(chunk)
             metadata = {
-                    "owner": normalize_metadata_value(owner),
-                    "repo": normalize_metadata_value(repo),
-                    "path": normalize_metadata_value(path),
-                    "chunk": i
-                }
-            add_code_chunk(
-                id=f"{owner}_{repo}_{path}_{i}",
-                text=chunk,
-                metadata = metadata
-            )
+        "owner": normalize_metadata_value(owner),
+        "repo": normalize_metadata_value(repo),
+        "path": normalize_metadata_value(path),
+        "chunk": i
+    }
+
+    add_code_chunk(
+        id=f"{owner}_{repo}_{path}_{i}",
+        text=chunk,
+        metadata=metadata
+    )
